@@ -1,266 +1,105 @@
-"""
-Bio-Velocity Equilibrium Framework (BVEF) Reference Engine.
+# Bio-Velocity Equilibrium Framework (BVEF)
 
-A self-contained quantitative architecture coupling dynamic hospitality pricing,
-carrying-capacity velocity bounds, ecosystem degradation liability penalties,
-and enterprise asset valuation adjustments.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Domain](https://img.shields.io/badge/Domain-Hospitality_Asset_Valuation-darkgreen.svg)](#theoretical-foundation)
+[![Governance](https://img.shields.io/badge/Governance-Carrying_Capacity_Equilibrium-teal.svg)](#formal-mathematical-formulation)
+[![Latency](https://img.shields.io/badge/Execution_Latency-<50µs-brightgreen.svg)](#empirical-benchmarks)
 
-Author: Pathirannehelage Gayan Nugawela
-Year: 2026
-License: MIT
-"""
+An open-source reference engine and quantitative simulation architecture for the **Bio-Velocity Equilibrium Framework (BVEF)**. The framework couples dynamic hospitality revenue management with real-time biophysical carrying capacity, ecosystem degradation liability penalties, and discounted asset valuation mechanics.
 
-import math
-import time
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Dict, List, Optional, Tuple
+---
 
+## Theoretical Foundation
 
-# ==============================================================================
-# Model Entities & Enums
-# ==============================================================================
+Traditional revenue management systems in hospitality rely on unconstrained volume maximization. In ecologically vulnerable luxury destinations, unconstrained demand capture accelerates natural asset degradation, imposing unpriced negative externalities that shorten capital replacement cycles and depress property capitalization rates.
 
-class EcologicalRegime(Enum):
-    REGENERATIVE = "REGENERATIVE"           # Instantaneous load <= carrying capacity
-    TRANSITIONAL = "TRANSITIONAL"           # Minor carrying capacity overshoot, absorbable
-    CRITICAL_OVERBURDEN = "CRITICAL_OVERBURDEN"  # Structural degradation regime
+The **Bio-Velocity Equilibrium Framework (BVEF)** eliminates this blind spot by integrating biophysical constraints into algorithmic rate governance:
 
+* **Dynamic Rate Floor Surcharging:** Internalizes non-linear ecosystem degradation into marginal cost-to-serve boundaries.
+* **Carrying-Capacity Velocity Rationing:** Shifts dynamic price discovery upward during biophysical stress events to naturally ration footfall without hard administrative caps.
+* **Asset Valuation Discounting:** Connects continuous carrying-capacity stress directly to enterprise capitalization rates, demonstrating that short-term volume dumping erodes terminal real estate asset value.
 
-@dataclass(frozen=True)
-class EcosystemParameters:
-    """Parameters governing natural asset carrying capacity, recovery, and valuation."""
-    nominal_carrying_capacity: float        # Sustainable daily/cycle guest footprint (units)
-    regeneration_rate_gamma: float          # Environmental restoration velocity (0 < gamma < 1)
-    degradation_cost_coefficient_alpha: float  # Marginal cash restoration penalty ($/excess unit)
-    degradation_exponent_theta: float       # Non-linear stress penalty scaling (theta >= 1.0)
-    asset_base_valuation: float             # Baseline enterprise asset valuation ($)
-    valuation_beta_sensitivity: float       # Cap-rate discount sensitivity to cumulative stress
-    valuation_floor_omega: float            # Structural physical asset floor boundary ratio (0 < omega < 1)
+---
 
+## Formal Mathematical Formulation
 
-@dataclass
-class OperationalYieldState:
-    """Operational cycle inputs for dynamic yield and displacement governance."""
-    cycle_id: str
-    available_units: int
-    demanded_units: int
-    base_unconstrained_rate: float
-    marginal_cost_to_serve: float
-    current_occupancy_ratio: float = 0.0
+### 1. Instantaneous Bio-Velocity Index ($\mathcal{B}_t$)
 
-    def __post_init__(self):
-        units_sold = min(self.available_units, self.demanded_units)
-        self.current_occupancy_ratio = units_sold / self.available_units if self.available_units > 0 else 0.0
+$$\mathcal{B}_t = \mathcal{L}_t + \mathcal{S}_t = \frac{U_t}{K} + \mathcal{S}_t$$
 
+Where:
+* $U_t$ is instantaneous occupied inventory volume (guest rooms/units sold).
+* $K$ is the nominal sustainable carrying capacity per operational cycle.
+* $\mathcal{L}_t = \frac{U_t}{K}$ is the instantaneous ecological load ratio.
+* $\mathcal{S}_t$ is cumulative carryover biophysical stress.
 
-@dataclass
-class BVEFExecutionResult:
-    """Output metrics from the Bio-Velocity Equilibrium audit."""
-    cycle_id: str
-    occupied_units: int
-    regime: EcologicalRegime
-    bio_velocity_index: float
-    cumulative_stress: float
-    base_marginal_cost: float
-    marginal_ecological_penalty: float
-    adjusted_bvef_rate_floor: float
-    recommended_bvef_rate: float
-    gross_revenue: float
-    direct_operating_costs: float
-    ecosystem_degradation_penalty: float
-    net_operating_cashflow: float
-    adjusted_enterprise_valuation: float
-    execution_time_us: float
+### 2. Carryover Stress Dynamics ($\mathcal{S}_t$)
 
+Environmental carryover stress decays naturally at restoration velocity $\gamma \in (0, 1)$, while absorbing incremental overshoot beyond the sustainable boundary:
 
-# ==============================================================================
-# BVEF Core Mathematical Engine
-# ==============================================================================
+$$\mathcal{S}_t = \max\left(0, \; \mathcal{S}_{t-1}(1 - \gamma) + \max\left(0, \; \frac{U_t}{K} - 1\right)\right)$$
 
-class BioVelocityEquilibriumEngine:
-    """
-    Quantitative engine evaluating real-time dynamic pricing equilibrium against
-    biophysical carrying capacity and long-term enterprise valuation constraints.
-    """
+### 3. Non-Linear Ecosystem Degradation Penalty ($\mathcal{D}_t$)
 
-    def __init__(self, params: EcosystemParameters):
-        self.params = params
+When utilization exceeds nominal carrying capacity ($U_t > K$), the enterprise incurs a compounding financial liability:
 
-    def compute_bio_velocity_index(
-        self, occupied_units: int, cumulative_stress: float
-    ) -> Tuple[float, float, EcologicalRegime]:
-        """
-        Computes the instantaneous Bio-Velocity Index (B_t) and carries forward cumulative stress:
-            Instantaneous Load L_t = U_t / K
-            Stress Update S_t = max(0, S_{t-1} * (1 - gamma) + max(0, L_t - 1))
-            Bio-Velocity Index B_t = L_t + S_t
-        """
-        instantaneous_load = occupied_units / self.params.nominal_carrying_capacity
-        excess_ratio = max(0.0, instantaneous_load - 1.0)
-        
-        # Environmental recovery dynamics: stress decays by gamma, then absorbs new overshoot
-        updated_stress = max(
-            0.0,
-            (cumulative_stress * (1.0 - self.params.regeneration_rate_gamma)) + excess_ratio
-        )
-        bio_velocity = instantaneous_load + updated_stress
+$$\mathcal{D}_t = \alpha \cdot \max(0, \; U_t - K)^{\theta}$$
 
-        if bio_velocity <= 1.0:
-            regime = EcologicalRegime.REGENERATIVE
-        elif bio_velocity <= 1.35:
-            regime = EcologicalRegime.TRANSITIONAL
-        else:
-            regime = EcologicalRegime.CRITICAL_OVERBURDEN
+Where:
+* $\alpha$ represents baseline marginal restoration liability (USD per excess unit).
+* $\theta \ge 1.0$ is the non-linear degradation compounding exponent.
 
-        return bio_velocity, updated_stress, regime
+### 4. Dynamic Marginal Rate Floor ($R_{\text{floor}}$)
 
-    def evaluate_cycle(
-        self, state: OperationalYieldState, cumulative_stress: float
-    ) -> BVEFExecutionResult:
-        """
-        Executes a deterministic cycle evaluation:
-          1. Computes bio-velocity and stress states.
-          2. Derives non-linear ecological degradation penalty.
-          3. Establishes the BVEF dynamic marginal rate floor.
-          4. Allocates market clearing rate using velocity rationing.
-          5. Computes net adjusted operating cash flow and discounted asset valuation.
-        """
-        t0 = time.perf_counter_ns()
+To guarantee positive net yield accounting for ecological externalities, the rate floor is dynamically expanded:
 
-        units_sold = min(state.available_units, state.demanded_units)
-        b_idx, updated_stress, regime = self.compute_bio_velocity_index(units_sold, cumulative_stress)
+$$R_{\text{floor}}(t) = MC_{\text{direct}} + \frac{\mathcal{D}_t}{U_t}$$
 
-        # 1. Marginal Ecological Liability Penalty
-        excess_units = max(0.0, units_sold - self.params.nominal_carrying_capacity)
-        if excess_units > 0.0:
-            degradation_penalty = self.params.degradation_cost_coefficient_alpha * (
-                excess_units ** self.params.degradation_exponent_theta
-            )
-            marginal_ecological_cost = degradation_penalty / units_sold
-        else:
-            degradation_penalty = 0.0
-            marginal_ecological_cost = 0.0
+Where $MC_{\text{direct}}$ represents variable operational cost-to-serve.
 
-        # 2. Dynamic Marginal Rate Floor (BVEF Floor)
-        # Guarantees rate covers both direct cost-to-serve and ecological restoration liabilities
-        bvef_rate_floor = state.marginal_cost_to_serve + marginal_ecological_cost
+### 5. Demand Rationing Rate Discovery ($R_{\text{BVEF}}$)
 
-        # 3. Dynamic Market Equilibrium Rate
-        if b_idx > 1.0:
-            # Shift pricing upward via log-velocity multiplier to ration demand away from overload
-            velocity_multiplier = 1.0 + math.log(b_idx)
-            recommended_rate = max(bvef_rate_floor, state.base_unconstrained_rate * velocity_multiplier)
-        else:
-            recommended_rate = max(bvef_rate_floor, state.base_unconstrained_rate)
+$$\mathcal{R}_{\text{BVEF}}(t) =  \begin{cases}  \max\left(R_{\text{floor}}(t), \; R_{\text{unconstrained}} \cdot \left[1 + \ln(\mathcal{B}_t)\right]\right), & \text{if } \mathcal{B}_t > 1.0 \\  \max\left(R_{\text{floor}}(t), \; R_{\text{unconstrained}}\right), & \text{if } \mathcal{B}_t \le 1.0  \end{cases}$$
 
-        # 4. Cash Flow and Enterprise Valuation Mechanics
-        gross_revenue = units_sold * recommended_rate
-        direct_costs = units_sold * state.marginal_cost_to_serve
-        net_cashflow = gross_revenue - direct_costs - degradation_penalty
+### 6. Degradation-Adjusted Enterprise Valuation ($V_t$)
 
-        # Valuation discount due to cumulative carrying capacity degradation
-        valuation_discount = self.params.valuation_beta_sensitivity * updated_stress
-        adjusted_valuation = self.params.asset_base_valuation * max(
-            self.params.valuation_floor_omega, (1.0 - valuation_discount)
-        )
+$$V_t = V_{\text{base}} \cdot \max\left(\Omega_{\min}, \; 1 - \beta \mathcal{S}_t\right)$$
 
-        elapsed_us = (time.perf_counter_ns() - t0) / 1000.0
+Where:
+* $V_{\text{base}}$ is the baseline property / natural asset appraisal value.
+* $\beta$ is the capitalization-rate sensitivity coefficient to cumulative stress.
+* $\Omega_{\min}$ is the structural liquidation floor ratio.
 
-        return BVEFExecutionResult(
-            cycle_id=state.cycle_id,
-            occupied_units=units_sold,
-            regime=regime,
-            bio_velocity_index=round(b_idx, 4),
-            cumulative_stress=round(updated_stress, 4),
-            base_marginal_cost=round(state.marginal_cost_to_serve, 2),
-            marginal_ecological_penalty=round(marginal_ecological_cost, 2),
-            adjusted_bvef_rate_floor=round(bvef_rate_floor, 2),
-            recommended_bvef_rate=round(recommended_rate, 2),
-            gross_revenue=round(gross_revenue, 2),
-            direct_operating_costs=round(direct_costs, 2),
-            ecosystem_degradation_penalty=round(degradation_penalty, 2),
-            net_operating_cashflow=round(net_cashflow, 2),
-            adjusted_enterprise_valuation=round(adjusted_valuation, 2),
-            execution_time_us=round(elapsed_us, 2)
-        )
+---
 
+## Architectural Data Flow
 
-# ==============================================================================
-# Benchmarking & Multi-Cycle Simulation Suite
-# ==============================================================================
-
-def run_bvef_comprehensive_suite():
-    print("=" * 86)
-    print("BIO-VELOCITY EQUILIBRIUM FRAMEWORK (BVEF) REFERENCE ENGINE")
-    print("Ecosystem Carrying Capacity & Dynamic Yield Valuation Simulation")
-    print("=" * 86)
-
-    # Asset Baseline Configuration
-    eco_params = EcosystemParameters(
-        nominal_carrying_capacity=100.0,          # 100 rooms/guests sustainable threshold
-        regeneration_rate_gamma=0.15,             # 15% natural regeneration velocity per operational cycle
-        degradation_cost_coefficient_alpha=45.0,  # Baseline restoration cost ($45 per excess unit)
-        degradation_exponent_theta=1.35,          # Non-linear degradation compounding
-        asset_base_valuation=60_000_000.0,        # $60,000,000 baseline luxury eco-resort asset value
-        valuation_beta_sensitivity=0.075,         # 7.5% cap-rate adjustment per stress index unit
-        valuation_floor_omega=0.25                # 25% minimum structural liquidation floor
-    )
-
-    engine = BioVelocityEquilibriumEngine(eco_params)
-
-    # Consecutive operational cycles: Nominal -> Capacity Ceiling -> Overburden -> Extreme Stress -> Recovery
-    cycle_scenarios = [
-        OperationalYieldState("Cycle-1-Nominal-Demand", 120, 75, 320.0, 120.0),
-        OperationalYieldState("Cycle-2-Capacity-Threshold", 120, 100, 340.0, 120.0),
-        OperationalYieldState("Cycle-3-High-Overshoot", 120, 118, 350.0, 120.0),
-        OperationalYieldState("Cycle-4-Peak-Overburden", 120, 120, 360.0, 120.0),
-        OperationalYieldState("Cycle-5-Post-Peak-Cooldown", 120, 60, 300.0, 120.0),
-    ]
-
-    cumulative_stress = 0.0
-
-    for idx, cycle in enumerate(cycle_scenarios, start=1):
-        res = engine.evaluate_cycle(cycle, cumulative_stress)
-        cumulative_stress = res.cumulative_stress
-
-        print(f"\n[{cycle.cycle_id}] | Regime: {res.regime.value}")
-        print(f"  Physical Occupancy     : {res.occupied_units} / {cycle.available_units} units (Capacity: {eco_params.nominal_carrying_capacity:.0f})")
-        print(f"  Bio-Velocity Index     : {res.bio_velocity_index:.4f} | Carryover Stress: {res.cumulative_stress:.4f}")
-        print(f"  Base Unconstrained Rate: ${cycle.base_unconstrained_rate:.2f} --> Recommended BVEF Rate: ${res.recommended_bvef_rate:.2f}")
-        print(f"  Dynamic Rate Floor     : ${res.adjusted_bvef_rate_floor:.2f} (Direct Cost: ${res.base_marginal_cost:.2f} + Eco Penalty: ${res.marginal_ecological_penalty:.2f})")
-        print(f"  Gross Revenue          : ${res.gross_revenue:,.2f}")
-        print(f"  Direct Operating Costs : ${res.direct_operating_costs:,.2f}")
-        print(f"  Ecosystem Degradation  : -${res.ecosystem_degradation_penalty:,.2f}")
-        print(f"  Net Operating Cash Flow: ${res.net_operating_cashflow:,.2f}")
-        print(f"  Enterprise Valuation   : ${res.adjusted_enterprise_valuation:,.2f}")
-        print(f"  Verification Latency   : {res.execution_time_us:.2f} µs")
-
-    # High-frequency stress benchmark
-    print("\n" + "-" * 86)
-    print("Benchmarking 10,000 Consecutive BVEF Real-Time Audit Cycles...")
-    
-    benchmark_state = OperationalYieldState("Benchmark-Cycle", 120, 110, 330.0, 120.0)
-    latencies = []
-    bench_stress = 0.0
-
-    for _ in range(10_000):
-        t_start = time.perf_counter_ns()
-        result = engine.evaluate_cycle(benchmark_state, bench_stress)
-        elapsed_us = (time.perf_counter_ns() - t_start) / 1000.0
-        latencies.append(elapsed_us)
-        bench_stress = result.cumulative_stress
-
-    latencies.sort()
-    p50 = latencies[int(len(latencies) * 0.50)]
-    p95 = latencies[int(len(latencies) * 0.95)]
-    p99 = latencies[int(len(latencies) * 0.99)]
-
-    print(f"  P50 (Median Latency)   : {p50:.2f} µs")
-    print(f"  P95 Latency            : {p95:.2f} µs")
-    print(f"  P99 Latency            : {p99:.2f} µs")
-    print("=" * 86)
-
-
-if __name__ == "__main__":
-    run_bvef_comprehensive_suite()
+```text
+ ┌────────────────────────────────────────────────────────┐
+ │  OPERATIONAL INPUT PLANE                               │
+ │  • Available Units & Demanded Units                    │
+ │  • Unconstrained Rate & Marginal Cost-to-Serve         │
+ └────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+ ┌────────────────────────────────────────────────────────┐
+ │  BIO-VELOCITY EQUILIBRIUM ENCLAVE                      │
+ │  • Instantaneous Load: L_t = U_t / K                   │
+ │  • Stress Carryover: S_t = S_{t-1}(1 - γ) + max(0, L_t - 1)
+ │  • Degradation Penalty: D_t = α · (U_t - K)^θ          │
+ └────────────────────────────────────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+ ┌─────────────────────────┐ ┌─────────────────────────┐
+ │  DYNAMIC RATE GOVERNOR  │ │  BALANCE SHEET AUDITOR  │
+ │  • BVEF Floor = MC + D/U│ │  • Net Cashflow         │
+ │  • Log-Velocity Ration  │ │  • Discounted Asset Val │
+ └─────────────────────────┘ └─────────────────────────┘
+              │                           │
+              ▼                           ▼
+ ┌────────────────────────────────────────────────────────┐
+ │  ACTUATION & AUDIT LOGGING                             │
+ │  (SynXis / Opera PMS / Asset Management Reporting)     │
+ └────────────────────────────────────────────────────────┘
