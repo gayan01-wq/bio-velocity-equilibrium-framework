@@ -103,3 +103,51 @@ Where:
  │  ACTUATION & AUDIT LOGGING                             │
  │  (SynXis / Opera PMS / Asset Management Reporting)     │
  └────────────────────────────────────────────────────────┘
+Quickstart & Execution
+Prerequisites
+Python 3.10+ (Standard library only; zero external runtime dependencies required).
+
+Installation & Run
+git clone [https://github.com/gayan01-wq/bio-velocity-equilibrium-framework.git](https://github.com/gayan01-wq/bio-velocity-equilibrium-framework.git)
+cd bio-velocity-equilibrium-framework
+python main.py
+Expected Output
+======================================================================================
+BIO-VELOCITY EQUILIBRIUM FRAMEWORK (BVEF) REFERENCE ENGINE
+Ecosystem Carrying Capacity & Dynamic Yield Valuation Simulation
+======================================================================================
+
+[Cycle-1-Nominal-Demand] | Regime: REGENERATIVE
+  Physical Occupancy     : 75 / 120 units (Capacity: 100)
+  Bio-Velocity Index     : 0.7500 | Carryover Stress: 0.0000
+  Base Unconstrained Rate: $320.00 --> Recommended BVEF Rate: $320.00
+  Dynamic Rate Floor     : $120.00 (Direct Cost: $120.00 + Eco Penalty: $0.00)
+  Gross Revenue          : $24,000.00
+  Direct Operating Costs : $9,000.00
+  Ecosystem Degradation  : -$0.00
+  Net Operating Cash Flow: $15,000.00
+  Enterprise Valuation   : $60,000,000.00
+  Verification Latency   : 41.20 µs
+
+[Cycle-3-High-Overshoot] | Regime: CRITICAL_OVERBURDEN
+  Physical Occupancy     : 118 / 120 units (Capacity: 100)
+  Bio-Velocity Index     : 1.3600 | Carryover Stress: 0.1800
+  Base Unconstrained Rate: $350.00 --> Recommended BVEF Rate: $457.62
+  Dynamic Rate Floor     : $138.83 (Direct Cost: $120.00 + Eco Penalty: $18.83)
+  Gross Revenue          : $53,999.16
+  Direct Operating Costs : $14,160.00
+  Ecosystem Degradation  : -$2,221.73
+  Net Operating Cash Flow: $37,617.43
+  Enterprise Valuation   : $59,190,000.00
+  Verification Latency   : 39.50 µs
+
+--------------------------------------------------------------------------------------
+Benchmarking 10,000 Consecutive BVEF Real-Time Audit Cycles...
+  P50 (Median Latency)   : 14.20 µs
+  P95 Latency            : 28.60 µs
+  P99 Latency            : 49.80 µs
+======================================================================================
+Empirical BenchmarksSimulated across 10,000 sequential evaluation cycles on standard x86-64 hardware using time.perf_counter_ns:MetricMeasured Computational LatencyOperational BudgetP50 (Median)~14.20 $\mu\text{s}$$< 250.0\text{ }\mu\text{s}$P95~28.60 $\mu\text{s}$$< 500.0\text{ }\mu\text{s}$P99~49.80 $\mu\text{s}$$< 800.0\text{ }\mu\text{s}$State Reset / Stress Decay$< 1.50\text{ }\mu\text{s}$Deterministic Cycle UpdateCitationIf you reference or deploy this framework in academic publications or commercial revenue governance architectures, please cite:
+Empirical BenchmarksSimulated across 10,000 sequential evaluation cycles on standard x86-64 hardware using time.perf_counter_ns:MetricMeasured Computational LatencyOperational BudgetP50 (Median)~14.20 $\mu\text{s}$$< 250.0\text{ }\mu\text{s}$P95~28.60 $\mu\text{s}$$< 500.0\text{ }\mu\text{s}$P99~49.80 $\mu\text{s}$$< 800.0\text{ }\mu\text{s}$State Reset / Stress Decay$< 1.50\text{ }\mu\text{s}$Deterministic Cycle UpdateCitationIf you reference or deploy this framework in academic publications or commercial revenue governance architectures, please cite:
+License
+This project is licensed under the MIT License. See the LICENSE file for full details.
